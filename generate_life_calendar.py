@@ -9,7 +9,7 @@ import cairo
 
 
 # A1 standard international paper size
-DOC_WIDTH = 1683   # 594mm / 23 3/8 inches
+DOC_WIDTH = 1683  # 594mm / 23 3/8 inches
 DOC_HEIGHT = 2383  # 841mm / 33 1/8 inches
 
 DOC_NAME = "life_calendar.pdf"
@@ -47,7 +47,7 @@ ARROW_HEAD_WIDTH = 8
 
 
 def parse_date(date):
-    formats = ['%d/%m/%Y', '%d-%m-%Y']
+    formats = ["%d/%m/%Y", "%d-%m-%Y"]
 
     for f in formats:
         try:
@@ -111,7 +111,7 @@ def is_current_week(now, month, day):
 
 
 def parse_darken_until_date(date):
-    if date == 'today':
+    if date == "today":
         today = datetime.date.today()
         until_date = datetime.datetime(today.year, today.month, today.day)
     else:
@@ -173,16 +173,16 @@ def draw_grid(ctx, date, birthdate, age, darken_until_date):
 
     # Draw the key for box colours
     ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL,
-        cairo.FONT_WEIGHT_NORMAL)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
-    pos_x = draw_key_item(ctx, pos_x, pos_y, KEY_BIRTHDAY_DESC, box_size, BIRTHDAY_COLOUR)
+    pos_x = draw_key_item(
+        ctx, pos_x, pos_y, KEY_BIRTHDAY_DESC, box_size, BIRTHDAY_COLOUR
+    )
     draw_key_item(ctx, pos_x, pos_y, KEY_NEWYEAR_DESC, box_size, NEWYEAR_COLOUR)
 
     # draw week numbers above top row
     ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL,
-        cairo.FONT_WEIGHT_NORMAL)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
     pos_x = x_margin
     pos_y = Y_MARGIN
@@ -194,18 +194,16 @@ def draw_grid(ctx, date, birthdate, age, darken_until_date):
         pos_x += box_size + BOX_MARGIN
 
     ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_ITALIC,
-        cairo.FONT_WEIGHT_NORMAL)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_ITALIC, cairo.FONT_WEIGHT_NORMAL)
 
     for i in range(num_rows):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
-        date_str = date.strftime('%d %b, %Y')
+        date_str = date.strftime("%d %b, %Y")
         w, h = text_size(ctx, date_str)
 
         # Draw it in front of the current row
-        ctx.move_to(x_margin - w - box_size,
-            pos_y + ((box_size / 2) + (h / 2)))
+        ctx.move_to(x_margin - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
         ctx.show_text(date_str)
 
         # Draw the current row
@@ -217,26 +215,32 @@ def draw_grid(ctx, date, birthdate, age, darken_until_date):
 
     return x_margin
 
-def gen_calendar(birthdate, title, age, filename, darken_until_date, sidebar_text=None,
-                 subtitle_text=None):
+
+def gen_calendar(
+    birthdate,
+    title,
+    age,
+    filename,
+    darken_until_date,
+    sidebar_text=None,
+    subtitle_text=None,
+):
     if len(title) > MAX_TITLE_SIZE:
-        raise ValueError("Title can't be longer than %d characters"
-            % MAX_TITLE_SIZE)
+        raise ValueError("Title can't be longer than %d characters" % MAX_TITLE_SIZE)
 
     age = int(age)
     if (age < MIN_AGE) or (age > MAX_AGE):
         raise ValueError("Invalid age, must be between %d and %d" % (MIN_AGE, MAX_AGE))
 
     # Fill background with white
-    surface = cairo.PDFSurface (filename, DOC_WIDTH, DOC_HEIGHT)
+    surface = cairo.PDFSurface(filename, DOC_WIDTH, DOC_HEIGHT)
     ctx = cairo.Context(surface)
 
     ctx.set_source_rgb(1, 1, 1)
     ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
     ctx.fill()
 
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL,
-        cairo.FONT_WEIGHT_BOLD)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     ctx.set_source_rgb(0, 0, 0)
     ctx.set_font_size(BIGFONT_SIZE)
     w, h = text_size(ctx, title)
@@ -268,49 +272,96 @@ def gen_calendar(birthdate, title, age, filename, darken_until_date, sidebar_tex
 
 
 def main():
-    parser = argparse.ArgumentParser(description='\nGenerate a personalized "Life '
-                                     ' Calendar", inspired by the calendar with the same name from the '
-                                     'waitbutwhy.com store')
+    parser = argparse.ArgumentParser(
+        description='\nGenerate a personalized "Life '
+        ' Calendar", inspired by the calendar with the same name from the '
+        "waitbutwhy.com store"
+    )
 
-    parser.add_argument(type=parse_date, dest='date', help='starting date; your birthday,'
-                        'in either yyyy/mm/dd or dd/mm/yyyy format (dashes \'-\' may also be used in '
-                        'place of slashes \'/\')')
+    parser.add_argument(
+        type=parse_date,
+        dest="date",
+        help="starting date; your birthday,"
+        "in either yyyy/mm/dd or dd/mm/yyyy format (dashes '-' may also be used in "
+        "place of slashes '/')",
+    )
 
-    parser.add_argument('-f', '--filename', type=str, dest='filename',
-                        help='output filename', default=DOC_NAME)
+    parser.add_argument(
+        "-f",
+        "--filename",
+        type=str,
+        dest="filename",
+        help="output filename",
+        default=DOC_NAME,
+    )
 
-    parser.add_argument('-t', '--title', type=str, dest='title',
-                        help='Calendar title text (default is "%s")' % DEFAULT_TITLE,
-                        default=DEFAULT_TITLE)
+    parser.add_argument(
+        "-t",
+        "--title",
+        type=str,
+        dest="title",
+        help='Calendar title text (default is "%s")' % DEFAULT_TITLE,
+        default=DEFAULT_TITLE,
+    )
 
-    parser.add_argument('-s', '--sidebar-text', type=str, dest='sidebar_text',
-                        help='Text to show along the right side of grid (default is no sidebar text)',
-                        default=None)
+    parser.add_argument(
+        "-s",
+        "--sidebar-text",
+        type=str,
+        dest="sidebar_text",
+        help="Text to show along the right side of grid (default is no sidebar text)",
+        default=None,
+    )
 
-    parser.add_argument('-b', '--subtitle-text', type=str, dest='subtitle_text',
-                        help='Text to show under the calendar title (default is no subtitle text)',
-                        default=None)
+    parser.add_argument(
+        "-b",
+        "--subtitle-text",
+        type=str,
+        dest="subtitle_text",
+        help="Text to show under the calendar title (default is no subtitle text)",
+        default=None,
+    )
 
-    parser.add_argument('-a', '--age', type=int, dest='age', choices=range(MIN_AGE, MAX_AGE + 1),
-                        metavar='[%s-%s]' % (MIN_AGE, MAX_AGE),
-                        help=('Number of rows to generate, representing years of life'),
-                        default=90)
+    parser.add_argument(
+        "-a",
+        "--age",
+        type=int,
+        dest="age",
+        choices=range(MIN_AGE, MAX_AGE + 1),
+        metavar="[%s-%s]" % (MIN_AGE, MAX_AGE),
+        help=("Number of rows to generate, representing years of life"),
+        default=90,
+    )
 
-    parser.add_argument('-d', '--darken-until', type=parse_darken_until_date, dest='darken_until_date',
-                         nargs='?', const='today', help='Darken until date. '
-                        '(defaults to today if argument is not given)')
+    parser.add_argument(
+        "-d",
+        "--darken-until",
+        type=parse_darken_until_date,
+        dest="darken_until_date",
+        nargs="?",
+        const="today",
+        help="Darken until date. " "(defaults to today if argument is not given)",
+    )
 
     args = parser.parse_args()
-    doc_name = '%s.pdf' % (os.path.splitext(args.filename)[0])
+    doc_name = "%s.pdf" % (os.path.splitext(args.filename)[0])
 
     try:
-        gen_calendar(args.date, args.title, args.age, doc_name, args.darken_until_date,
-                     sidebar_text=args.sidebar_text, subtitle_text=args.subtitle_text)
+        gen_calendar(
+            args.date,
+            args.title,
+            args.age,
+            doc_name,
+            args.darken_until_date,
+            sidebar_text=args.sidebar_text,
+            subtitle_text=args.subtitle_text,
+        )
     except Exception as e:
         print("Error: %s" % e)
         return
 
-    print('Created %s' % doc_name)
+    print("Created %s" % doc_name)
+
 
 if __name__ == "__main__":
     main()
