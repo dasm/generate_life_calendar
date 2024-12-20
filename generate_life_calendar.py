@@ -197,14 +197,25 @@ def draw_title(ctx, title):
     ctx.show_text(title)
 
 
+def draw_subtitle(ctx, subtitle):
+    if not subtitle:
+        return
+
+    ctx.set_source_rgb(0.7, 0.7, 0.7)
+    ctx.set_font_size(SMALLFONT_SIZE)
+    w, h = text_size(ctx, subtitle)
+    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
+    ctx.show_text(subtitle)
+
+
 def gen_calendar(
     birthdate,
     title,
     age,
     filename,
     darken_until_date,
-    sidebar_text=None,
-    subtitle_text=None,
+    sidebar,
+    subtitle,
 ):
     # Fill background with white
     surface = cairo.PDFSurface(filename, DOC_WIDTH, DOC_HEIGHT)
@@ -215,25 +226,19 @@ def gen_calendar(
     ctx.fill()
 
     draw_title(ctx, title)
-
-    if subtitle_text is not None:
-        ctx.set_source_rgb(0.7, 0.7, 0.7)
-        ctx.set_font_size(SMALLFONT_SIZE)
-        w, h = text_size(ctx, subtitle_text)
-        ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
-        ctx.show_text(subtitle_text)
+    draw_subtitle(ctx, subtitle)
 
     # Draw 52x90 grid of squares
     x_margin = draw_grid(ctx, birthdate, age, darken_until_date)
 
-    if sidebar_text is not None:
+    if sidebar is not None:
         # Draw text on sidebar
-        w, h = text_size(ctx, sidebar_text)
+        w, h = text_size(ctx, sidebar)
         ctx.move_to((DOC_WIDTH - x_margin) + 20, Y_MARGIN + w + 100)
         ctx.set_font_size(SMALLFONT_SIZE)
         ctx.set_source_rgb(0.7, 0.7, 0.7)
         ctx.rotate(-90 * math.pi / 180)
-        ctx.show_text(sidebar_text)
+        ctx.show_text(sidebar)
 
     ctx.show_page()
 
@@ -278,18 +283,16 @@ def generate_parser():
         "-s",
         "--sidebar-text",
         type=str,
-        dest="sidebar_text",
+        dest="sidebar",
         help="Text to show along the right side of grid (default is no sidebar text)",
-        default=None,
     )
 
     parser.add_argument(
         "-b",
         "--subtitle-text",
         type=str,
-        dest="subtitle_text",
+        dest="subtitle",
         help="Text to show under the calendar title (default is no subtitle text)",
-        default=None,
     )
 
     parser.add_argument(
@@ -326,8 +329,8 @@ def main():
         args.age,
         doc_name,
         args.darken_until_date,
-        sidebar_text=args.sidebar_text,
-        subtitle_text=args.subtitle_text,
+        sidebar=args.sidebar,
+        subtitle=args.subtitle,
     )
     print("Created %s" % doc_name)
 
