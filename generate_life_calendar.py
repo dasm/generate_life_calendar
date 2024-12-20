@@ -170,7 +170,7 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     for idx in range(1, num_rows+1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
-        date_str = date.strftime("%d %b, %Y")
+        _date_str = date.strftime("%d %b, %Y")
         w, h = text_size(ctx, str(idx))
 
         # Draw it in front of the current row
@@ -219,7 +219,7 @@ def draw_sidebar(ctx, sidebar, margin):
 
     ctx.set_source_rgb(0.7, 0.7, 0.7)
     ctx.set_font_size(SMALLFONT_SIZE)
-    w, h = text_size(ctx, sidebar)
+    w, _h = text_size(ctx, sidebar)
     ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
     ctx.rotate(-90 * math.pi / 180)
     ctx.show_text(sidebar)
