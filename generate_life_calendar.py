@@ -65,9 +65,7 @@ def text_size(ctx, text):
 
 
 def back_up_to_monday(date):
-    while date.weekday() != 0:
-        date -= datetime.timedelta(days=1)
-    return date
+    return date - datetime.timedelta(date.weekday())
 
 
 def is_future(now, date):
@@ -132,10 +130,12 @@ def draw_key_item(ctx, pos_x, pos_y, desc, box_size, colour):
     return pos_x + w + (box_size * 2)
 
 
-def draw_grid(ctx, date, birthdate, num_rows, darken_until_date):
+def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     """
-    Draws the whole grid of 52x90 squares
+    Draws the whole grid of 52x(num_rows) squares
     """
+    date = back_up_to_monday(birthdate)
+
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
     x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
 
@@ -157,25 +157,26 @@ def draw_grid(ctx, date, birthdate, num_rows, darken_until_date):
 
     pos_x = x_margin
     pos_y = Y_MARGIN
-    for i in range(NUM_COLUMNS):
-        text = str(i + 1)
-        w, h = text_size(ctx, text)
+    for idx in range(1, NUM_COLUMNS+1):
+        w, h = text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), pos_y - box_size)
-        ctx.show_text(text)
+        if idx % 4 == 0:
+            ctx.show_text(str(idx))
         pos_x += box_size + BOX_MARGIN
 
     ctx.set_font_size(TINYFONT_SIZE)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_ITALIC, cairo.FONT_WEIGHT_NORMAL)
 
-    for i in range(num_rows):
+    for idx in range(1, num_rows+1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
         date_str = date.strftime("%d %b, %Y")
-        w, h = text_size(ctx, date_str)
+        w, h = text_size(ctx, str(idx))
 
         # Draw it in front of the current row
         ctx.move_to(x_margin - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
-        ctx.show_text(date_str)
+        if idx % 5 == 0:
+            ctx.show_text(str(idx))
 
         # Draw the current row
         draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
@@ -218,10 +219,8 @@ def gen_calendar(
         ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
         ctx.show_text(subtitle_text)
 
-    date = back_up_to_monday(birthdate)
-
     # Draw 52x90 grid of squares
-    x_margin = draw_grid(ctx, date, birthdate, age, darken_until_date)
+    x_margin = draw_grid(ctx, birthdate, age, darken_until_date)
 
     if sidebar_text is not None:
         # Draw text on sidebar
