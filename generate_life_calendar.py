@@ -200,10 +200,6 @@ def gen_calendar(
     sidebar_text=None,
     subtitle_text=None,
 ):
-    age = int(age)
-    if (age < MIN_AGE) or (age > MAX_AGE):
-        raise ValueError("Invalid age, must be between %d and %d" % (MIN_AGE, MAX_AGE))
-
     # Fill background with white
     surface = cairo.PDFSurface(filename, DOC_WIDTH, DOC_HEIGHT)
     ctx = cairo.Context(surface)
@@ -243,7 +239,7 @@ def gen_calendar(
     ctx.show_page()
 
 
-def main():
+def generate_parser():
     parser = argparse.ArgumentParser(
         description='\nGenerate a personalized "Life '
         ' Calendar", inspired by the calendar with the same name from the '
@@ -252,7 +248,7 @@ def main():
     parser.add_argument(
         "date",
         type=datetime.datetime.fromisoformat,
-        help="starting date; your birthday, in ISO format (with dashes '-')",
+        help="starting date; your birthday, in ISO format",
     )
     parser.add_argument(
         "-f",
@@ -265,7 +261,7 @@ def main():
 
     def title_len(title):
         if len(title) > MAX_TITLE_SIZE:
-            raise ValueError("Title can't be longer than %d characters" % MAX_TITLE_SIZE)
+            raise argparse.ArgumentTypeError("Title can't be longer than %d characters" % MAX_TITLE_SIZE)
         return title
 
     parser.add_argument(
@@ -315,23 +311,23 @@ def main():
         help="Darken until date. " "(defaults to today if argument is not given)",
     )
 
+    return parser
+
+
+def main():
+    parser = generate_parser()
     args = parser.parse_args()
     doc_name = "%s.pdf" % (os.path.splitext(args.filename)[0])
 
-    try:
-        gen_calendar(
-            args.date,
-            args.title,
-            args.age,
-            doc_name,
-            args.darken_until_date,
-            sidebar_text=args.sidebar_text,
-            subtitle_text=args.subtitle_text,
-        )
-    except Exception as e:
-        print("Error: %s" % e)
-        return
-
+    gen_calendar(
+        args.date,
+        args.title,
+        args.age,
+        doc_name,
+        args.darken_until_date,
+        sidebar_text=args.sidebar_text,
+        subtitle_text=args.subtitle_text,
+    )
     print("Created %s" % doc_name)
 
 
