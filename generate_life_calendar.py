@@ -1,7 +1,5 @@
 import datetime
-import calendar
 import argparse
-import sys
 import os
 import math
 
@@ -106,7 +104,7 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
 
     pos_x = x_margin
 
-    for i in range(NUM_COLUMNS):
+    for _ in range(NUM_COLUMNS):
         fill = (1, 1, 1)
 
         if is_current_week(date, birthdate.month, birthdate.day):
@@ -134,15 +132,13 @@ def draw_key_item(ctx, pos_x, pos_y, desc, box_size, colour):
     return pos_x + w + (box_size * 2)
 
 
-def draw_grid(ctx, date, birthdate, age, darken_until_date):
+def draw_grid(ctx, date, birthdate, num_rows, darken_until_date):
     """
     Draws the whole grid of 52x90 squares
     """
-    num_rows = age
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
     x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
 
-    start_date = date
     pos_x = x_margin / 4
     pos_y = pos_x
 
@@ -261,7 +257,9 @@ def generate_parser():
 
     def title_len(title):
         if len(title) > MAX_TITLE_SIZE:
-            raise argparse.ArgumentTypeError("Title can't be longer than %d characters" % MAX_TITLE_SIZE)
+            raise argparse.ArgumentTypeError(
+                "Title can't be longer than %d characters" % MAX_TITLE_SIZE
+            )
         return title
 
     parser.add_argument(
