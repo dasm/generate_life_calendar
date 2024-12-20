@@ -188,6 +188,12 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     return x_margin
 
 
+def draw_canvas(ctx):
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
+    ctx.fill()
+
+
 def draw_title(ctx, title):
     ctx.set_source_rgb(0, 0, 0)
     ctx.set_font_size(BIGFONT_SIZE)
@@ -233,10 +239,7 @@ def gen_calendar(
     ctx = cairo.Context(surface)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 
-    ctx.set_source_rgb(1, 1, 1)
-    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
-    ctx.fill()
-
+    draw_canvas(ctx)
     draw_title(ctx, title)
     draw_subtitle(ctx, subtitle)
 
