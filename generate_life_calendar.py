@@ -189,7 +189,6 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
 
 
 def draw_title(ctx, title):
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     ctx.set_source_rgb(0, 0, 0)
     ctx.set_font_size(BIGFONT_SIZE)
     w, h = text_size(ctx, title)
@@ -208,6 +207,18 @@ def draw_subtitle(ctx, subtitle):
     ctx.show_text(subtitle)
 
 
+def draw_sidebar(ctx, sidebar, margin):
+    if not sidebar:
+        return
+
+    ctx.set_source_rgb(0.7, 0.7, 0.7)
+    ctx.set_font_size(SMALLFONT_SIZE)
+    w, h = text_size(ctx, sidebar)
+    ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
+    ctx.rotate(-90 * math.pi / 180)
+    ctx.show_text(sidebar)
+
+
 def gen_calendar(
     birthdate,
     title,
@@ -220,6 +231,7 @@ def gen_calendar(
     # Fill background with white
     surface = cairo.PDFSurface(filename, DOC_WIDTH, DOC_HEIGHT)
     ctx = cairo.Context(surface)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 
     ctx.set_source_rgb(1, 1, 1)
     ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
@@ -228,17 +240,8 @@ def gen_calendar(
     draw_title(ctx, title)
     draw_subtitle(ctx, subtitle)
 
-    # Draw 52x90 grid of squares
     x_margin = draw_grid(ctx, birthdate, age, darken_until_date)
-
-    if sidebar is not None:
-        # Draw text on sidebar
-        w, h = text_size(ctx, sidebar)
-        ctx.move_to((DOC_WIDTH - x_margin) + 20, Y_MARGIN + w + 100)
-        ctx.set_font_size(SMALLFONT_SIZE)
-        ctx.set_source_rgb(0.7, 0.7, 0.7)
-        ctx.rotate(-90 * math.pi / 180)
-        ctx.show_text(sidebar)
+    draw_sidebar(ctx, sidebar, x_margin)
 
     ctx.show_page()
 
