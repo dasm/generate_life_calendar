@@ -43,11 +43,47 @@ ARROW_HEAD_LENGTH = 36
 ARROW_HEAD_WIDTH = 8
 
 
+def draw_canvas(ctx):
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
+    ctx.fill()
+
+
+def draw_title(ctx, title):
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_font_size(BIGFONT_SIZE)
+    w, h = text_size(ctx, title)
+    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2))
+    ctx.show_text(title)
+
+
+def draw_subtitle(ctx, subtitle):
+    if not subtitle:
+        return
+
+    ctx.set_source_rgb(0.7, 0.7, 0.7)
+    ctx.set_font_size(SMALLFONT_SIZE)
+    w, h = text_size(ctx, subtitle)
+    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
+    ctx.show_text(subtitle)
+
+
+def draw_sidebar(ctx, sidebar, margin):
+    if not sidebar:
+        return
+
+    ctx.set_source_rgb(0.7, 0.7, 0.7)
+    ctx.set_font_size(SMALLFONT_SIZE)
+    w, _h = text_size(ctx, sidebar)
+    ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
+    ctx.rotate(-90 * math.pi / 180)
+    ctx.show_text(sidebar)
+
+
 def draw_square(ctx, pos_x, pos_y, box_size, fillcolour=(1, 1, 1)):
     """
     Draws a square at pos_x,pos_y
     """
-
     ctx.set_line_width(BOX_LINE_WIDTH)
     ctx.set_source_rgb(0, 0, 0)
     ctx.move_to(pos_x, pos_y)
@@ -186,43 +222,6 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
         date += datetime.timedelta(weeks=52)
 
     return x_margin
-
-
-def draw_canvas(ctx):
-    ctx.set_source_rgb(1, 1, 1)
-    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
-    ctx.fill()
-
-
-def draw_title(ctx, title):
-    ctx.set_source_rgb(0, 0, 0)
-    ctx.set_font_size(BIGFONT_SIZE)
-    w, h = text_size(ctx, title)
-    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2))
-    ctx.show_text(title)
-
-
-def draw_subtitle(ctx, subtitle):
-    if not subtitle:
-        return
-
-    ctx.set_source_rgb(0.7, 0.7, 0.7)
-    ctx.set_font_size(SMALLFONT_SIZE)
-    w, h = text_size(ctx, subtitle)
-    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
-    ctx.show_text(subtitle)
-
-
-def draw_sidebar(ctx, sidebar, margin):
-    if not sidebar:
-        return
-
-    ctx.set_source_rgb(0.7, 0.7, 0.7)
-    ctx.set_font_size(SMALLFONT_SIZE)
-    w, _h = text_size(ctx, sidebar)
-    ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
-    ctx.rotate(-90 * math.pi / 180)
-    ctx.show_text(sidebar)
 
 
 def gen_calendar(
