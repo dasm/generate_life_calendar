@@ -188,6 +188,15 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     return x_margin
 
 
+def draw_title(ctx, title):
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_font_size(BIGFONT_SIZE)
+    w, h = text_size(ctx, title)
+    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2))
+    ctx.show_text(title)
+
+
 def gen_calendar(
     birthdate,
     title,
@@ -205,12 +214,7 @@ def gen_calendar(
     ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
     ctx.fill()
 
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-    ctx.set_source_rgb(0, 0, 0)
-    ctx.set_font_size(BIGFONT_SIZE)
-    w, h = text_size(ctx, title)
-    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2))
-    ctx.show_text(title)
+    draw_title(ctx, title)
 
     if subtitle_text is not None:
         ctx.set_source_rgb(0.7, 0.7, 0.7)
