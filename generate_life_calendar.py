@@ -34,7 +34,6 @@ BOX_MARGIN = 6
 MIN_AGE = 80
 MAX_AGE = 100
 
-
 BOX_LINE_WIDTH = 3
 NUM_COLUMNS = 52
 
@@ -44,20 +43,6 @@ DARKENED_COLOUR_DELTA = (-0.4, -0.4, -0.4)
 
 ARROW_HEAD_LENGTH = 36
 ARROW_HEAD_WIDTH = 8
-
-
-def parse_date(date):
-    formats = ["%d/%m/%Y", "%d-%m-%Y"]
-
-    for f in formats:
-        try:
-            ret = datetime.datetime.strptime(date.strip(), f)
-        except ValueError:
-            continue
-        else:
-            return ret
-
-    raise ValueError("Incorrect date format: must be dd-mm-yyyy or dd/mm/yyyy")
 
 
 def draw_square(ctx, pos_x, pos_y, box_size, fillcolour=(1, 1, 1)):
@@ -108,16 +93,6 @@ def is_current_week(now, month, day):
         ret.append(now <= date < end)
 
     return True in ret
-
-
-def parse_darken_until_date(date):
-    if date == "today":
-        today = datetime.date.today()
-        until_date = datetime.datetime(today.year, today.month, today.day)
-    else:
-        until_date = parse_date(date)
-
-    return back_up_to_monday(until_date)
 
 
 def get_darkened_fill(fill):
@@ -225,9 +200,6 @@ def gen_calendar(
     sidebar_text=None,
     subtitle_text=None,
 ):
-    if len(title) > MAX_TITLE_SIZE:
-        raise ValueError("Title can't be longer than %d characters" % MAX_TITLE_SIZE)
-
     age = int(age)
     if (age < MIN_AGE) or (age > MAX_AGE):
         raise ValueError("Invalid age, must be between %d and %d" % (MIN_AGE, MAX_AGE))
@@ -277,15 +249,11 @@ def main():
         ' Calendar", inspired by the calendar with the same name from the '
         "waitbutwhy.com store"
     )
-
     parser.add_argument(
-        type=parse_date,
-        dest="date",
-        help="starting date; your birthday,"
-        "in either yyyy/mm/dd or dd/mm/yyyy format (dashes '-' may also be used in "
-        "place of slashes '/')",
+        "date",
+        type=datetime.datetime.fromisoformat,
+        help="starting date; your birthday, in ISO format (with dashes '-')",
     )
-
     parser.add_argument(
         "-f",
         "--filename",
@@ -295,10 +263,15 @@ def main():
         default=DOC_NAME,
     )
 
+    def title_len(title):
+        if len(title) > MAX_TITLE_SIZE:
+            raise ValueError("Title can't be longer than %d characters" % MAX_TITLE_SIZE)
+        return title
+
     parser.add_argument(
         "-t",
         "--title",
-        type=str,
+        type=title_len,
         dest="title",
         help='Calendar title text (default is "%s")' % DEFAULT_TITLE,
         default=DEFAULT_TITLE,
@@ -336,10 +309,9 @@ def main():
     parser.add_argument(
         "-d",
         "--darken-until",
-        type=parse_darken_until_date,
+        type=datetime.datetime.fromisoformat,
         dest="darken_until_date",
-        nargs="?",
-        const="today",
+        default=datetime.datetime.today(),
         help="Darken until date. " "(defaults to today if argument is not given)",
     )
 
