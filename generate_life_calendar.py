@@ -178,6 +178,7 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
 
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
     x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
+
     pos_x = x_margin
     pos_y = Y_MARGIN
 
@@ -190,13 +191,9 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
             ctx.show_text(str(idx))
         pos_x += box_size + BOX_MARGIN
 
-    ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_ITALIC, cairo.FONT_WEIGHT_NORMAL)
-
     for idx in range(1, num_rows + 1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
-        _ = monday.strftime("%d %b, %Y")
         w, h = text_size(ctx, str(idx))
 
         # Draw it in front of the current row
