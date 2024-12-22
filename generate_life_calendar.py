@@ -37,6 +37,12 @@ NEWYEAR_COLOR = (0.8, 0.8, 0.8)
 DARKENED_COLOR_DELTA = (-0.4, -0.4, -0.4)
 
 
+def get_number_of_weeks(year):
+    next_year = datetime.datetime(year+1, 1, 1)
+    current_year = next_year - datetime.timedelta(days=4)
+    return current_year.isocalendar()[1]
+
+
 def draw_canvas(ctx):
     ctx.set_source_rgb(1, 1, 1)
     ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
@@ -74,7 +80,7 @@ def draw_sidebar(ctx, sidebar, margin):
     ctx.show_text(sidebar)
 
 
-def draw_square(ctx, pos_x, pos_y, box_size, fillcolour=(1, 1, 1)):
+def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
     """
     Draws a square at pos_x,pos_y
     """
@@ -85,7 +91,7 @@ def draw_square(ctx, pos_x, pos_y, box_size, fillcolour=(1, 1, 1)):
     ctx.rectangle(pos_x, pos_y, box_size, box_size)
     ctx.stroke_preserve()
 
-    ctx.set_source_rgb(*fillcolour)
+    ctx.set_source_rgb(*fillcolor)
     ctx.fill()
 
 
@@ -143,21 +149,22 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
         if darken_until_date and is_future(date, darken_until_date):
             fill = get_darkened_fill(fill)
 
-        draw_square(ctx, pos_x, pos_y, box_size, fillcolour=fill)
+        draw_box(ctx, pos_x, pos_y, box_size, fillcolor=fill)
         pos_x += box_size + BOX_MARGIN
         date += datetime.timedelta(weeks=1)
 
 
 def draw_legend(ctx):
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
-    x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 8
-    pos_y = x_margin
+    margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS))
+    x_margin = margin / 2
+    pos_y = margin / 8
 
     for desc, color in (
         (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
         (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
     ):
-        draw_square(ctx, x_margin, pos_y, box_size, fillcolour=color)
+        draw_box(ctx, x_margin, pos_y, box_size, fillcolor=color)
         pos_x = x_margin + box_size + (box_size / 2)
 
         ctx.set_source_rgb(0, 0, 0)
@@ -181,7 +188,7 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     """
     Draws the whole grid of 52x(num_rows) squares
     """
-    # Draw the key for box colours
+    # Draw the key for box colors
     ctx.set_font_size(TINYFONT_SIZE)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
