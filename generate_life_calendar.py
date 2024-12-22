@@ -199,7 +199,7 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     for idx in range(1, num_rows + 1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
-        _date_str = monday.strftime("%d %b, %Y")
+        _ = monday.strftime("%d %b, %Y")
         w, h = text_size(ctx, str(idx))
 
         # Draw it in front of the current row
