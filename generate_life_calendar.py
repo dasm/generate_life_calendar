@@ -1,10 +1,9 @@
-import datetime
 import argparse
-import os
+import datetime
 import math
+import os
 
 import cairo
-
 
 # A1 standard international paper size
 DOC_WIDTH = 1683  # 594mm / 23 3/8 inches
