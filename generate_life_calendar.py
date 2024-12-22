@@ -150,22 +150,22 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
 
 def draw_legend(ctx):
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
-    pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 8
-    pos_y = pos_x
+    x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 8
+    pos_y = x_margin
 
     for desc, color in (
         (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
         (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
     ):
-        draw_square(ctx, pos_x, pos_y, box_size, fillcolour=color)
-        pos_x += box_size + (box_size / 2)
+        draw_square(ctx, x_margin, pos_y, box_size, fillcolour=color)
+        pos_x = x_margin + box_size + (box_size / 2)
 
         ctx.set_source_rgb(0, 0, 0)
         w, h = text_size(ctx, desc)
         ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
         ctx.show_text(desc)
 
-        pos_x += w + (box_size * 2)
+        pos_y += box_size + BOX_MARGIN
 
 
 def draw_week_numbers(ctx, box_size, pos_x):
