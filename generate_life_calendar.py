@@ -168,6 +168,15 @@ def draw_legend(ctx):
         pos_x += w + (box_size * 2)
 
 
+def draw_week_numbers(ctx, box_size, pos_x):
+    for idx in range(1, NUM_COLUMNS + 1):
+        w, h = text_size(ctx, str(idx))
+        ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
+        if idx % 4 == 0:
+            ctx.show_text(str(idx))
+        pos_x += box_size + BOX_MARGIN
+
+
 def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     """
     Draws the whole grid of 52x(num_rows) squares
@@ -179,18 +188,10 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
     x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
 
-    pos_x = x_margin
-    pos_y = Y_MARGIN
+    draw_week_numbers(ctx, box_size, x_margin)
 
-    # draw week numbers above top row
     monday = back_up_to_monday(birthdate)
-    for idx in range(1, NUM_COLUMNS + 1):
-        w, h = text_size(ctx, str(idx))
-        ctx.move_to(pos_x + (box_size / 2) - (w / 2), pos_y - box_size)
-        if idx % 4 == 0:
-            ctx.show_text(str(idx))
-        pos_x += box_size + BOX_MARGIN
-
+    pos_y = Y_MARGIN
     for idx in range(1, num_rows + 1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
