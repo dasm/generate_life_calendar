@@ -148,7 +148,11 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
         date += datetime.timedelta(weeks=1)
 
 
-def draw_legend(ctx, pos_x, pos_y, box_size):
+def draw_legend(ctx):
+    box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
+    pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 8
+    pos_y = pos_x
+
     for desc, colour in (
         (KEY_NEWYEAR_DESC, NEWYEAR_COLOUR),
         (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOUR),
@@ -174,18 +178,11 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
 
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
     x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
-
-    pos_x = x_margin / 4
-    pos_y = pos_x
-
-    # Draw legend
-    draw_legend(ctx, pos_x, pos_y, box_size)
+    pos_x = x_margin
+    pos_y = Y_MARGIN
 
     # draw week numbers above top row
     monday = back_up_to_monday(birthdate)
-
-    pos_x = x_margin
-    pos_y = Y_MARGIN
     for idx in range(1, NUM_COLUMNS + 1):
         w, h = text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), pos_y - box_size)
@@ -234,6 +231,7 @@ def gen_calendar(
     draw_canvas(ctx)
     draw_title(ctx, title)
     draw_subtitle(ctx, subtitle)
+    draw_legend(ctx)
 
     x_margin = draw_grid(ctx, birthdate, age, darken_until_date)
     draw_sidebar(ctx, sidebar, x_margin)
