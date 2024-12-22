@@ -15,9 +15,6 @@ DOC_NAME = "life_calendar.pdf"
 KEY_NEWYEAR_DESC = "First week of the new year"
 KEY_BIRTHDAY_DESC = "Week of your birthday"
 
-XAXIS_DESC = "Weeks of the year"
-YAXIS_DESC = "Years of your life"
-
 FONT = "Brocha"
 BIGFONT_SIZE = 40
 SMALLFONT_SIZE = 16
@@ -38,9 +35,6 @@ NUM_COLUMNS = 52
 BIRTHDAY_COLOUR = (0.5, 0.5, 0.5)
 NEWYEAR_COLOUR = (0.8, 0.8, 0.8)
 DARKENED_COLOUR_DELTA = (-0.4, -0.4, -0.4)
-
-ARROW_HEAD_LENGTH = 36
-ARROW_HEAD_WIDTH = 8
 
 
 def draw_canvas(ctx):
