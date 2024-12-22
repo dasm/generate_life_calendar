@@ -32,9 +32,9 @@ MAX_AGE = 100
 BOX_LINE_WIDTH = 3
 NUM_COLUMNS = 52
 
-BIRTHDAY_COLOUR = (0.5, 0.5, 0.5)
-NEWYEAR_COLOUR = (0.8, 0.8, 0.8)
-DARKENED_COLOUR_DELTA = (-0.4, -0.4, -0.4)
+BIRTHDAY_COLOR = (0.5, 0.5, 0.5)
+NEWYEAR_COLOR = (0.8, 0.8, 0.8)
+DARKENED_COLOR_DELTA = (-0.4, -0.4, -0.4)
 
 
 def draw_canvas(ctx):
@@ -122,7 +122,7 @@ def is_current_week(now, month, day):
 
 
 def get_darkened_fill(fill):
-    return tuple(map(sum, zip(fill, DARKENED_COLOUR_DELTA)))
+    return tuple(map(sum, zip(fill, DARKENED_COLOR_DELTA)))
 
 
 def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date):
@@ -136,9 +136,9 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
         fill = (1, 1, 1)
 
         if is_current_week(date, birthdate.month, birthdate.day):
-            fill = BIRTHDAY_COLOUR
+            fill = BIRTHDAY_COLOR
         elif is_current_week(date, 1, 1):
-            fill = NEWYEAR_COLOUR
+            fill = NEWYEAR_COLOR
 
         if darken_until_date and is_future(date, darken_until_date):
             fill = get_darkened_fill(fill)
@@ -153,11 +153,11 @@ def draw_legend(ctx):
     pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 8
     pos_y = pos_x
 
-    for desc, colour in (
-        (KEY_NEWYEAR_DESC, NEWYEAR_COLOUR),
-        (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOUR),
+    for desc, color in (
+        (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
+        (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
     ):
-        draw_square(ctx, pos_x, pos_y, box_size, fillcolour=colour)
+        draw_square(ctx, pos_x, pos_y, box_size, fillcolour=color)
         pos_x += box_size + (box_size / 2)
 
         ctx.set_source_rgb(0, 0, 0)
