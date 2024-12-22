@@ -154,23 +154,29 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
         date += datetime.timedelta(weeks=1)
 
 
-def draw_key_item(ctx, pos_x, pos_y, desc, box_size, colour):
-    draw_square(ctx, pos_x, pos_y, box_size, fillcolour=colour)
-    pos_x += box_size + (box_size / 2)
+def draw_legend(ctx, pos_x, pos_y, box_size):
+    for desc, colour in (
+        (KEY_NEWYEAR_DESC, NEWYEAR_COLOUR),
+        (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOUR),
+    ):
+        draw_square(ctx, pos_x, pos_y, box_size, fillcolour=colour)
+        pos_x += box_size + (box_size / 2)
 
-    ctx.set_source_rgb(0, 0, 0)
-    w, h = text_size(ctx, desc)
-    ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
-    ctx.show_text(desc)
+        ctx.set_source_rgb(0, 0, 0)
+        w, h = text_size(ctx, desc)
+        ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
+        ctx.show_text(desc)
 
-    return pos_x + w + (box_size * 2)
+        pos_x += w + (box_size * 2)
 
 
 def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     """
     Draws the whole grid of 52x(num_rows) squares
     """
-    date = back_up_to_monday(birthdate)
+    # Draw the key for box colours
+    ctx.set_font_size(TINYFONT_SIZE)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
     x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
@@ -178,22 +184,15 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     pos_x = x_margin / 4
     pos_y = pos_x
 
-    # Draw the key for box colours
-    ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-
-    pos_x = draw_key_item(
-        ctx, pos_x, pos_y, KEY_BIRTHDAY_DESC, box_size, BIRTHDAY_COLOUR
-    )
-    draw_key_item(ctx, pos_x, pos_y, KEY_NEWYEAR_DESC, box_size, NEWYEAR_COLOUR)
+    # Draw legend
+    draw_legend(ctx, pos_x, pos_y, box_size)
 
     # draw week numbers above top row
-    ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    monday = back_up_to_monday(birthdate)
 
     pos_x = x_margin
     pos_y = Y_MARGIN
-    for idx in range(1, NUM_COLUMNS+1):
+    for idx in range(1, NUM_COLUMNS + 1):
         w, h = text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), pos_y - box_size)
         if idx % 4 == 0:
@@ -203,10 +202,10 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     ctx.set_font_size(TINYFONT_SIZE)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_ITALIC, cairo.FONT_WEIGHT_NORMAL)
 
-    for idx in range(1, num_rows+1):
+    for idx in range(1, num_rows + 1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
-        _date_str = date.strftime("%d %b, %Y")
+        _date_str = monday.strftime("%d %b, %Y")
         w, h = text_size(ctx, str(idx))
 
         # Draw it in front of the current row
@@ -215,11 +214,11 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
             ctx.show_text(str(idx))
 
         # Draw the current row
-        draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
+        draw_row(ctx, pos_y, birthdate, monday, box_size, x_margin, darken_until_date)
 
         # Increment y position and current date by 1 row/year
         pos_y += box_size + BOX_MARGIN
-        date += datetime.timedelta(weeks=52)
+        monday += datetime.timedelta(weeks=52)
 
     return x_margin
 
