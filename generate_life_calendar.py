@@ -30,7 +30,7 @@ MIN_AGE = 80
 MAX_AGE = 100
 
 BOX_LINE_WIDTH = 3
-NUM_COLUMNS = 52
+NUM_OF_WEEKS = 52
 
 BIRTHDAY_COLOR = (0.5, 0.5, 0.5)
 NEWYEAR_COLOR = (0.8, 0.8, 0.8)
@@ -104,14 +104,14 @@ def draw_subtitle(ctx, subtitle):
     ctx.show_text(subtitle)
 
 
-def draw_sidebar(ctx, sidebar, margin):
+def draw_sidebar(ctx, sidebar, pos_x):
     if not sidebar:
         return
 
     ctx.set_source_rgb(0.7, 0.7, 0.7)
     ctx.set_font_size(SMALLFONT_SIZE)
     w, _h = get_text_size(ctx, sidebar)
-    ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
+    ctx.move_to((DOC_WIDTH - pos_x) + 20, Y_MARGIN + w + 100)
     ctx.rotate(-90 * math.pi / 180)
     ctx.show_text(sidebar)
 
@@ -134,7 +134,7 @@ def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
 
 def draw_legend(ctx):
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
-    margin = DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)
+    margin = DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)
     x_margin = margin / 2
     pos_y = margin / 8
 
@@ -154,7 +154,7 @@ def draw_legend(ctx):
 
 
 def draw_week_numbers(ctx, box_size, pos_x):
-    for idx in range(1, NUM_COLUMNS + 1):
+    for idx in range(1, NUM_OF_WEEKS + 1):
         w, h = get_text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
         if idx % 4 == 0:
@@ -162,26 +162,23 @@ def draw_week_numbers(ctx, box_size, pos_x):
         pos_x += box_size + BOX_MARGIN
 
 
-def draw_year(ctx, box_size, x_margin, pos_y, idx):
-    if idx % 5 != 0:
+def draw_year(ctx, box_size, pos_x, pos_y, text):
+    if text % 5 != 0:
         return
 
     ctx.set_source_rgb(0, 0, 0)
-    w, h = get_text_size(ctx, str(idx))
+    w, h = get_text_size(ctx, str(text))
 
     # Draw it in front of the current row
-    ctx.move_to(x_margin - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
-    ctx.show_text(str(idx))
+    ctx.move_to(pos_x - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
+    ctx.show_text(str(text))
 
 
-def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date):
+def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
     """
     Draws a row of 52 squares, starting at pos_y
     """
-
-    pos_x = x_margin
-
-    for _ in range(NUM_COLUMNS):
+    for _ in range(NUM_OF_WEEKS):
         fill = (1, 1, 1)
 
         if is_current_week(date, birthdate.month, birthdate.day):
@@ -206,28 +203,28 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
-    x_margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)) / 2
+    pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)) / 2
 
-    draw_week_numbers(ctx, box_size, x_margin)
+    draw_week_numbers(ctx, box_size, pos_x)
 
     monday = get_monday(birthdate)
     pos_y = Y_MARGIN
     for idx in range(1, num_rows + 1):
         # Generate string for current date
-        draw_year(ctx, box_size, x_margin, pos_y, idx)
-        draw_row(ctx, pos_y, birthdate, monday, box_size, x_margin, darken_until_date)
+        draw_year(ctx, box_size, pos_x, pos_y, idx)
+        draw_row(ctx, box_size, pos_x, pos_y, birthdate, monday, darken_until_date)
 
         # Increment y position and current date by 1 row/year
         pos_y += box_size + BOX_MARGIN
         monday += datetime.timedelta(weeks=52)
 
-    return x_margin
+    return pos_x
 
 
 def gen_calendar(
     birthdate,
     title,
-    age,
+    life_expectancy,
     filename,
     darken_until_date,
     sidebar,
@@ -243,8 +240,8 @@ def gen_calendar(
     draw_subtitle(ctx, subtitle)
     draw_legend(ctx)
 
-    x_margin = draw_grid(ctx, birthdate, age, darken_until_date)
-    draw_sidebar(ctx, sidebar, x_margin)
+    pos_x = draw_grid(ctx, birthdate, life_expectancy, darken_until_date)
+    draw_sidebar(ctx, sidebar, pos_x)
 
     ctx.show_page()
 
