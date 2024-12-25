@@ -108,12 +108,16 @@ def draw_sidebar(ctx, sidebar, pos_x):
     if not sidebar:
         return
 
+    ctx.save()
+
     ctx.set_source_rgb(0.7, 0.7, 0.7)
     ctx.set_font_size(SMALLFONT_SIZE)
     w, _h = get_text_size(ctx, sidebar)
     ctx.move_to((DOC_WIDTH - pos_x) + 20, Y_MARGIN + w + 100)
     ctx.rotate(-90 * math.pi / 180)
     ctx.show_text(sidebar)
+
+    ctx.restore()
 
 
 def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
@@ -132,11 +136,8 @@ def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
     ctx.fill()
 
 
-def draw_legend(ctx):
-    box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
-    margin = DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)
-    x_margin = margin / 2
-    pos_y = margin / 8
+def draw_legend(ctx, box_size, pos_x, pos_y):
+    x_margin = pos_x
 
     for desc, color in (
         (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
@@ -154,6 +155,9 @@ def draw_legend(ctx):
 
 
 def draw_week_numbers(ctx, box_size, pos_x):
+    ctx.set_font_size(TINYFONT_SIZE)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+
     for idx in range(1, NUM_OF_WEEKS + 1):
         w, h = get_text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
@@ -162,16 +166,19 @@ def draw_week_numbers(ctx, box_size, pos_x):
         pos_x += box_size + BOX_MARGIN
 
 
-def draw_year(ctx, box_size, pos_x, pos_y, text):
-    if text % 5 != 0:
-        return
+def draw_year_numbers(ctx, box_size, pos_x, pos_y, life_expectancy):
+    ctx.set_font_size(TINYFONT_SIZE)
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
-    ctx.set_source_rgb(0, 0, 0)
-    w, h = get_text_size(ctx, str(text))
+    for year in range(life_expectancy):
+        ctx.set_source_rgb(0, 0, 0)
+        w, h = get_text_size(ctx, str(year))
 
-    # Draw it in front of the current row
-    ctx.move_to(pos_x - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
-    ctx.show_text(str(text))
+        # Draw it in front of the current row
+        ctx.move_to(pos_x - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
+        ctx.show_text(str(year))
+
+        pos_y += box_size + BOX_MARGIN
 
 
 def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
@@ -194,31 +201,19 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
         date += datetime.timedelta(weeks=1)
 
 
-def draw_grid(ctx, birthdate, num_rows, darken_until_date):
+def draw_grid(
+    ctx, box_size, pos_x, pos_y, life_expectancy, darken_until_date, birthdate
+):
     """
-    Draws the whole grid of 52x(num_rows) squares
+    Draws the whole grid of 52x(life_expectancy) squares
     """
     # Draw the key for box colors
-    ctx.set_font_size(TINYFONT_SIZE)
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-
-    box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / num_rows) - BOX_MARGIN
-    pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)) / 2
-
-    draw_week_numbers(ctx, box_size, pos_x)
-
     monday = get_monday(birthdate)
-    pos_y = Y_MARGIN
-    for idx in range(1, num_rows + 1):
-        # Generate string for current date
-        draw_year(ctx, box_size, pos_x, pos_y, idx)
+    for _ in range(1, life_expectancy + 1):
         draw_row(ctx, box_size, pos_x, pos_y, birthdate, monday, darken_until_date)
 
-        # Increment y position and current date by 1 row/year
         pos_y += box_size + BOX_MARGIN
         monday += datetime.timedelta(weeks=52)
-
-    return pos_x
 
 
 def gen_calendar(
@@ -235,12 +230,21 @@ def gen_calendar(
     ctx = cairo.Context(surface)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 
+    box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / life_expectancy) - BOX_MARGIN
+    pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)) / 2
+
     draw_canvas(ctx)
     draw_title(ctx, title)
     draw_subtitle(ctx, subtitle)
-    draw_legend(ctx)
 
-    pos_x = draw_grid(ctx, birthdate, life_expectancy, darken_until_date)
+    draw_legend(ctx, box_size, pos_x, pos_x / 4)
+
+    draw_week_numbers(ctx, box_size, pos_x)
+    draw_year_numbers(ctx, box_size, pos_x, Y_MARGIN, life_expectancy)
+    draw_grid(
+        ctx, box_size, pos_x, Y_MARGIN, life_expectancy, darken_until_date, birthdate
+    )
+
     draw_sidebar(ctx, sidebar, pos_x)
 
     ctx.show_page()
