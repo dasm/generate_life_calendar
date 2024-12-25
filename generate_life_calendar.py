@@ -162,6 +162,18 @@ def draw_week_numbers(ctx, box_size, pos_x):
         pos_x += box_size + BOX_MARGIN
 
 
+def draw_year(ctx, box_size, x_margin, pos_y, idx):
+    if idx % 5 != 0:
+        return
+
+    ctx.set_source_rgb(0, 0, 0)
+    w, h = get_text_size(ctx, str(idx))
+
+    # Draw it in front of the current row
+    ctx.move_to(x_margin - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
+    ctx.show_text(str(idx))
+
+
 def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date):
     """
     Draws a row of 52 squares, starting at pos_y
@@ -202,15 +214,7 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     pos_y = Y_MARGIN
     for idx in range(1, num_rows + 1):
         # Generate string for current date
-        ctx.set_source_rgb(0, 0, 0)
-        w, h = get_text_size(ctx, str(idx))
-
-        # Draw it in front of the current row
-        ctx.move_to(x_margin - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
-        if idx % 5 == 0:
-            ctx.show_text(str(idx))
-
-        # Draw the current row
+        draw_year(ctx, box_size, x_margin, pos_y, idx)
         draw_row(ctx, pos_y, birthdate, monday, box_size, x_margin, darken_until_date)
 
         # Increment y position and current date by 1 row/year
