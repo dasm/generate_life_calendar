@@ -43,7 +43,7 @@ def get_text_size(ctx, text):
 
 
 def get_number_of_weeks(year):
-    next_year = datetime.datetime(year+1, 1, 1)
+    next_year = datetime.datetime(year + 1, 1, 1)
     current_year = next_year - datetime.timedelta(days=4)
     return current_year.isocalendar()[1]
 
@@ -134,7 +134,7 @@ def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
 
 def draw_legend(ctx):
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
-    margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS))
+    margin = DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS)
     x_margin = margin / 2
     pos_y = margin / 8
 
