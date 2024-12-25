@@ -37,71 +37,23 @@ NEWYEAR_COLOR = (0.8, 0.8, 0.8)
 DARKENED_COLOR_DELTA = (-0.4, -0.4, -0.4)
 
 
+def get_text_size(ctx, text):
+    _, _, width, height, _, _ = ctx.text_extents(text)
+    return width, height
+
+
 def get_number_of_weeks(year):
     next_year = datetime.datetime(year+1, 1, 1)
     current_year = next_year - datetime.timedelta(days=4)
     return current_year.isocalendar()[1]
 
 
-def draw_canvas(ctx):
-    ctx.set_source_rgb(1, 1, 1)
-    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
-    ctx.fill()
-
-
-def draw_title(ctx, title):
-    ctx.set_source_rgb(0, 0, 0)
-    ctx.set_font_size(BIGFONT_SIZE)
-    w, h = text_size(ctx, title)
-    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2))
-    ctx.show_text(title)
-
-
-def draw_subtitle(ctx, subtitle):
-    if not subtitle:
-        return
-
-    ctx.set_source_rgb(0.7, 0.7, 0.7)
-    ctx.set_font_size(SMALLFONT_SIZE)
-    w, h = text_size(ctx, subtitle)
-    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
-    ctx.show_text(subtitle)
-
-
-def draw_sidebar(ctx, sidebar, margin):
-    if not sidebar:
-        return
-
-    ctx.set_source_rgb(0.7, 0.7, 0.7)
-    ctx.set_font_size(SMALLFONT_SIZE)
-    w, _h = text_size(ctx, sidebar)
-    ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
-    ctx.rotate(-90 * math.pi / 180)
-    ctx.show_text(sidebar)
-
-
-def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
-    """
-    Draws a square at pos_x,pos_y
-    """
-    ctx.set_line_width(BOX_LINE_WIDTH)
-    ctx.set_source_rgb(0, 0, 0)
-    ctx.move_to(pos_x, pos_y)
-
-    ctx.rectangle(pos_x, pos_y, box_size, box_size)
-    ctx.stroke_preserve()
-
-    ctx.set_source_rgb(*fillcolor)
-    ctx.fill()
-
-
-def text_size(ctx, text):
-    _, _, width, height, _, _ = ctx.text_extents(text)
-    return width, height
-
-
-def back_up_to_monday(date):
+def get_monday(date):
     return date - datetime.timedelta(date.weekday())
+
+
+def get_darkened_fill(fill):
+    return tuple(map(sum, zip(fill, DARKENED_COLOR_DELTA)))
 
 
 def is_future(now, date):
@@ -127,8 +79,87 @@ def is_current_week(now, month, day):
     return True in ret
 
 
-def get_darkened_fill(fill):
-    return tuple(map(sum, zip(fill, DARKENED_COLOR_DELTA)))
+def draw_canvas(ctx):
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
+    ctx.fill()
+
+
+def draw_title(ctx, title):
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_font_size(BIGFONT_SIZE)
+    w, h = get_text_size(ctx, title)
+    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2))
+    ctx.show_text(title)
+
+
+def draw_subtitle(ctx, subtitle):
+    if not subtitle:
+        return
+
+    ctx.set_source_rgb(0.7, 0.7, 0.7)
+    ctx.set_font_size(SMALLFONT_SIZE)
+    w, h = get_text_size(ctx, subtitle)
+    ctx.move_to((DOC_WIDTH / 2) - (w / 2), (Y_MARGIN / 2) - (h / 2) + 15)
+    ctx.show_text(subtitle)
+
+
+def draw_sidebar(ctx, sidebar, margin):
+    if not sidebar:
+        return
+
+    ctx.set_source_rgb(0.7, 0.7, 0.7)
+    ctx.set_font_size(SMALLFONT_SIZE)
+    w, _h = get_text_size(ctx, sidebar)
+    ctx.move_to((DOC_WIDTH - margin) + 20, Y_MARGIN + w + 100)
+    ctx.rotate(-90 * math.pi / 180)
+    ctx.show_text(sidebar)
+
+
+def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
+    """
+    Draws a square at pos_x,pos_y
+    """
+    ctx.set_line_width(BOX_LINE_WIDTH)
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.move_to(pos_x, pos_y)
+
+    ctx.rectangle(pos_x, pos_y, box_size, box_size)
+    ctx.stroke_preserve()
+
+    # Add color
+    ctx.set_source_rgb(*fillcolor)
+    ctx.fill()
+
+
+def draw_legend(ctx):
+    box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
+    margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS))
+    x_margin = margin / 2
+    pos_y = margin / 8
+
+    for desc, color in (
+        (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
+        (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
+    ):
+        draw_box(ctx, x_margin, pos_y, box_size, fillcolor=color)
+        pos_x = x_margin + box_size + (box_size / 2)
+
+        ctx.set_source_rgb(0, 0, 0)
+        w, h = get_text_size(ctx, desc)
+        ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
+        ctx.show_text(desc)
+
+        pos_y += box_size + BOX_MARGIN
+
+
+def draw_week_numbers(ctx, box_size, pos_x):
+    for idx in range(1, NUM_COLUMNS + 1):
+        w, h = get_text_size(ctx, str(idx))
+        ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
+        if idx % 4 == 0:
+            ctx.show_text(str(idx))
+        pos_x += box_size + BOX_MARGIN
 
 
 def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date):
@@ -154,36 +185,6 @@ def draw_row(ctx, pos_y, birthdate, date, box_size, x_margin, darken_until_date)
         date += datetime.timedelta(weeks=1)
 
 
-def draw_legend(ctx):
-    box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / MIN_AGE) - BOX_MARGIN
-    margin = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_COLUMNS))
-    x_margin = margin / 2
-    pos_y = margin / 8
-
-    for desc, color in (
-        (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
-        (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
-    ):
-        draw_box(ctx, x_margin, pos_y, box_size, fillcolor=color)
-        pos_x = x_margin + box_size + (box_size / 2)
-
-        ctx.set_source_rgb(0, 0, 0)
-        w, h = text_size(ctx, desc)
-        ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
-        ctx.show_text(desc)
-
-        pos_y += box_size + BOX_MARGIN
-
-
-def draw_week_numbers(ctx, box_size, pos_x):
-    for idx in range(1, NUM_COLUMNS + 1):
-        w, h = text_size(ctx, str(idx))
-        ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
-        if idx % 4 == 0:
-            ctx.show_text(str(idx))
-        pos_x += box_size + BOX_MARGIN
-
-
 def draw_grid(ctx, birthdate, num_rows, darken_until_date):
     """
     Draws the whole grid of 52x(num_rows) squares
@@ -197,12 +198,12 @@ def draw_grid(ctx, birthdate, num_rows, darken_until_date):
 
     draw_week_numbers(ctx, box_size, x_margin)
 
-    monday = back_up_to_monday(birthdate)
+    monday = get_monday(birthdate)
     pos_y = Y_MARGIN
     for idx in range(1, num_rows + 1):
         # Generate string for current date
         ctx.set_source_rgb(0, 0, 0)
-        w, h = text_size(ctx, str(idx))
+        w, h = get_text_size(ctx, str(idx))
 
         # Draw it in front of the current row
         ctx.move_to(x_margin - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
