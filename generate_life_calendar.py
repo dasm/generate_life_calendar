@@ -52,31 +52,8 @@ def get_monday(date):
     return date - datetime.timedelta(date.weekday())
 
 
-def get_darkened_fill(fill):
+def shaded_fill(fill):
     return tuple(map(sum, zip(fill, DARKENED_COLOR_DELTA)))
-
-
-def is_future(now, date):
-    return now < date
-
-
-def is_current_week(now, month, day):
-    end = now + datetime.timedelta(weeks=1)
-    ret = []
-
-    for year in [now.year, now.year + 1]:
-        try:
-            date = datetime.date(year, month, day)
-        except ValueError as e:
-            if (month == 2) and (day == 29):
-                # Handle edge case for birthday being on leap year day
-                date = datetime.date(year, month, day - 1)
-            else:
-                raise e
-
-        ret.append(now <= date < end)
-
-    return True in ret
 
 
 def draw_canvas(ctx):
@@ -181,19 +158,22 @@ def draw_year_numbers(ctx, box_size, pos_x, pos_y, life_expectancy):
         pos_y += box_size + BOX_MARGIN
 
 
-def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
+def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, shade_until_date):
     """
     Draws a row of 52 squares, starting at pos_y
     """
     for idx in range(1, NUM_OF_WEEKS + 1):
         fill = (1, 1, 1)
-        if is_current_week(date, birthdate.month, birthdate.day):
+        _year, current_week, _weekday = date.isocalendar()
+        _year, birthday_week, _weekday = birthdate.isocalendar()
+
+        if current_week == birthday_week:
             fill = BIRTHDAY_COLOR
-        elif is_current_week(date, 1, 1):
+        elif current_week == 1:
             fill = NEWYEAR_COLOR
 
-        if darken_until_date and is_future(date, darken_until_date):
-            fill = get_darkened_fill(fill)
+        if date < shade_until_date:
+            fill = shaded_fill(fill)
 
         draw_box(ctx, pos_x, pos_y, box_size, fillcolor=fill)
         if idx % 4 == 0:
@@ -203,7 +183,7 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
 
 
 def draw_grid(
-    ctx, box_size, pos_x, pos_y, life_expectancy, darken_until_date, birthdate
+    ctx, box_size, pos_x, pos_y, life_expectancy, shade_until_date, birthdate
 ):
     """
     Draws the whole grid of 52x(life_expectancy) squares
@@ -211,7 +191,7 @@ def draw_grid(
     # Draw the key for box colors
     monday = get_monday(birthdate)
     for _ in range(life_expectancy):
-        draw_row(ctx, box_size, pos_x, pos_y, birthdate, monday, darken_until_date)
+        draw_row(ctx, box_size, pos_x, pos_y, birthdate, monday, shade_until_date)
         pos_y += box_size + BOX_MARGIN
         monday += datetime.timedelta(weeks=52)
 
@@ -221,7 +201,7 @@ def gen_calendar(
     title,
     life_expectancy,
     filename,
-    darken_until_date,
+    shade_until_date,
     sidebar,
     subtitle,
 ):
@@ -246,7 +226,7 @@ def gen_calendar(
     draw_week_numbers(ctx, box_size, pos_x)
     draw_year_numbers(ctx, box_size, pos_x, Y_MARGIN, life_expectancy)
     draw_grid(
-        ctx, box_size, pos_x, Y_MARGIN, life_expectancy, darken_until_date, birthdate
+        ctx, box_size, pos_x, Y_MARGIN, life_expectancy, shade_until_date, birthdate
     )
 
     draw_sidebar(ctx, sidebar, pos_x)
@@ -321,7 +301,7 @@ def generate_parser():
         "-d",
         "--darken-until",
         type=datetime.date.fromisoformat,
-        dest="darken_until_date",
+        dest="shade_until_date",
         default=datetime.date.today(),
         help="Darken until date. " "(defaults to today if argument is not given)",
     )
@@ -339,7 +319,7 @@ def main():
         args.title,
         args.age,
         doc_name,
-        args.darken_until_date,
+        args.shade_until_date,
         sidebar=args.sidebar,
         subtitle=(args.subtitle or str(args.date)),
     )
