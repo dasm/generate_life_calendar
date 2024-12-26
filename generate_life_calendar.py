@@ -187,7 +187,6 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
     """
     for idx in range(1, NUM_OF_WEEKS + 1):
         fill = (1, 1, 1)
-
         if is_current_week(date, birthdate.month, birthdate.day):
             fill = BIRTHDAY_COLOR
         elif is_current_week(date, 1, 1):
@@ -321,7 +320,7 @@ def generate_parser():
     parser.add_argument(
         "-d",
         "--darken-until",
-        type=datetime.datetime.fromisoformat,
+        type=datetime.date.fromisoformat,
         dest="darken_until_date",
         default=datetime.date.today(),
         help="Darken until date. " "(defaults to today if argument is not given)",
