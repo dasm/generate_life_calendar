@@ -12,8 +12,8 @@ DOC_HEIGHT = 2383  # 841mm / 33 1/8 inches
 
 DOC_NAME = "life_calendar.pdf"
 
-KEY_NEWYEAR_DESC = "First week of the new year"
-KEY_BIRTHDAY_DESC = "Week of your birthday"
+KEY_NEWYEAR_DESC = "New Year"
+KEY_BIRTHDAY_DESC = "Birthday"
 
 FONT = "Brocha"
 BIGFONT_SIZE = 40
@@ -161,8 +161,7 @@ def draw_week_numbers(ctx, box_size, pos_x):
     for idx in range(1, NUM_OF_WEEKS + 1):
         w, h = get_text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
-        if idx % 4 == 0:
-            ctx.show_text(str(idx))
+        ctx.show_text(str(idx))
         pos_x += box_size + BOX_MARGIN
 
 
@@ -177,7 +176,6 @@ def draw_year_numbers(ctx, box_size, pos_x, pos_y, life_expectancy):
         # Draw it in front of the current row
         ctx.move_to(pos_x - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
         ctx.show_text(str(year))
-
         pos_y += box_size + BOX_MARGIN
 
 
@@ -185,7 +183,7 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
     """
     Draws a row of 52 squares, starting at pos_y
     """
-    for _ in range(NUM_OF_WEEKS):
+    for _ in range(1, NUM_OF_WEEKS + 1):
         fill = (1, 1, 1)
 
         if is_current_week(date, birthdate.month, birthdate.day):
@@ -209,9 +207,8 @@ def draw_grid(
     """
     # Draw the key for box colors
     monday = get_monday(birthdate)
-    for _ in range(1, life_expectancy + 1):
+    for _ in range(life_expectancy):
         draw_row(ctx, box_size, pos_x, pos_y, birthdate, monday, darken_until_date)
-
         pos_y += box_size + BOX_MARGIN
         monday += datetime.timedelta(weeks=52)
 
@@ -337,7 +334,7 @@ def main():
         doc_name,
         args.darken_until_date,
         sidebar=args.sidebar,
-        subtitle=args.subtitle,
+        subtitle=(args.subtitle or str(args.date.date())),
     )
     print("Created %s" % doc_name)
 
