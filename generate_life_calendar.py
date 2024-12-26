@@ -66,11 +66,11 @@ def is_current_week(now, month, day):
 
     for year in [now.year, now.year + 1]:
         try:
-            date = datetime.datetime(year, month, day)
+            date = datetime.date(year, month, day)
         except ValueError as e:
             if (month == 2) and (day == 29):
                 # Handle edge case for birthday being on leap year day
-                date = datetime.datetime(year, month, day - 1)
+                date = datetime.date(year, month, day - 1)
             else:
                 raise e
 
@@ -255,7 +255,7 @@ def generate_parser():
     )
     parser.add_argument(
         "date",
-        type=datetime.datetime.fromisoformat,
+        type=datetime.date.fromisoformat,
         help="starting date; your birthday, in ISO format",
     )
     parser.add_argument(
@@ -315,7 +315,7 @@ def generate_parser():
         "--darken-until",
         type=datetime.datetime.fromisoformat,
         dest="darken_until_date",
-        default=datetime.datetime.today(),
+        default=datetime.date.today(),
         help="Darken until date. " "(defaults to today if argument is not given)",
     )
 
@@ -334,7 +334,7 @@ def main():
         doc_name,
         args.darken_until_date,
         sidebar=args.sidebar,
-        subtitle=(args.subtitle or str(args.date.date())),
+        subtitle=(args.subtitle or str(args.date)),
     )
     print("Created %s" % doc_name)
 
