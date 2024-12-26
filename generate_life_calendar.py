@@ -161,7 +161,9 @@ def draw_week_numbers(ctx, box_size, pos_x):
     for idx in range(1, NUM_OF_WEEKS + 1):
         w, h = get_text_size(ctx, str(idx))
         ctx.move_to(pos_x + (box_size / 2) - (w / 2), Y_MARGIN - box_size)
-        ctx.show_text(str(idx))
+        if idx % 4 == 0:
+            ctx.show_text(str(idx))
+            pos_x += BOX_MARGIN
         pos_x += box_size + BOX_MARGIN
 
 
@@ -183,7 +185,7 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
     """
     Draws a row of 52 squares, starting at pos_y
     """
-    for _ in range(1, NUM_OF_WEEKS + 1):
+    for idx in range(1, NUM_OF_WEEKS + 1):
         fill = (1, 1, 1)
 
         if is_current_week(date, birthdate.month, birthdate.day):
@@ -195,6 +197,8 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, darken_until_date):
             fill = get_darkened_fill(fill)
 
         draw_box(ctx, pos_x, pos_y, box_size, fillcolor=fill)
+        if idx % 4 == 0:
+            pos_x += BOX_MARGIN
         pos_x += box_size + BOX_MARGIN
         date += datetime.timedelta(weeks=1)
 
@@ -228,7 +232,11 @@ def gen_calendar(
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 
     box_size = ((DOC_HEIGHT - (Y_MARGIN + 36)) / life_expectancy) - BOX_MARGIN
-    pos_x = (DOC_WIDTH - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)) / 2
+    pos_x = (
+        DOC_WIDTH
+        - ((box_size + BOX_MARGIN) * NUM_OF_WEEKS)
+        - (BOX_MARGIN * NUM_OF_WEEKS / 4)
+    ) / 2
 
     draw_canvas(ctx)
     draw_title(ctx, title)
