@@ -109,20 +109,15 @@ def draw_box(ctx, pos_x, pos_y, box_size, fillcolor=(1, 1, 1)):
 
 
 def draw_legend(ctx, box_size, pos_x, pos_y):
-    x_margin = pos_x
+    draw_box(ctx, pos_x, pos_y, box_size, fillcolor=BIRTHDAY_COLOR)
+    pos_x += box_size + (box_size / 2)
 
-    for desc, color in (
-        (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
-    ):
-        draw_box(ctx, x_margin, pos_y, box_size, fillcolor=color)
-        pos_x = x_margin + box_size + (box_size / 2)
+    ctx.set_source_rgb(0, 0, 0)
+    w, h = get_text_size(ctx, KEY_BIRTHDAY_DESC)
+    ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
+    ctx.show_text(KEY_BIRTHDAY_DESC)
 
-        ctx.set_source_rgb(0, 0, 0)
-        w, h = get_text_size(ctx, desc)
-        ctx.move_to(pos_x, pos_y + (box_size / 2) + (h / 2))
-        ctx.show_text(desc)
-
-        pos_y += box_size + BOX_MARGIN
+    pos_y += box_size + BOX_MARGIN
 
 
 def draw_week_numbers(ctx, box_size, pos_x):
@@ -138,17 +133,18 @@ def draw_week_numbers(ctx, box_size, pos_x):
         pos_x += box_size + BOX_MARGIN
 
 
-def draw_year_numbers(ctx, box_size, pos_x, pos_y, life_expectancy):
+def draw_year_numbers(ctx, box_size, pos_x, pos_y, life_expectancy, birthdate):
     ctx.set_font_size(TINYFONT_SIZE)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
-    for year in range(life_expectancy):
+    for idx, year in enumerate(range(birthdate.year, birthdate.year + life_expectancy)):
         ctx.set_source_rgb(0, 0, 0)
-        w, h = get_text_size(ctx, str(year))
+        w, h = get_text_size(ctx, f"{year} | {idx}")
 
         # Draw it in front of the current row
         ctx.move_to(pos_x - w - box_size, pos_y + ((box_size / 2) + (h / 2)))
-        ctx.show_text(str(year))
+        if idx % 5 == 0:
+            ctx.show_text(f"{year} | {idx}")
         pos_y += box_size + BOX_MARGIN
 
 
@@ -177,16 +173,14 @@ def draw_row(ctx, box_size, pos_x, pos_y, birthdate, shade_until_date, first_row
 
 
 def draw_grid(
-    ctx, box_size, pos_x, pos_y, life_expectancy, shade_until_date, birthdate
+    ctx, box_size, pos_x, pos_y, life_expectancy, birthdate, shade_until_date
 ):
     """
     Draws the whole grid of 52x(life_expectancy) squares
     """
     # Draw the key for box colors
     birthdate_year = birthdate.year
-    for idx, year in enumerate(
-        range(birthdate_year + 1, birthdate_year + 1 + life_expectancy)
-    ):
+    for idx, year in enumerate(range(birthdate_year, birthdate_year + life_expectancy)):
         birthdate = datetime.date(year, birthdate.month, birthdate.day)
         draw_row(ctx, box_size, pos_x, pos_y, birthdate, shade_until_date, idx == 0)
         pos_y += box_size + BOX_MARGIN
@@ -219,9 +213,9 @@ def gen_calendar(
     draw_legend(ctx, box_size, pos_x, pos_x / 4)
 
     draw_week_numbers(ctx, box_size, pos_x)
-    draw_year_numbers(ctx, box_size, pos_x, Y_MARGIN, life_expectancy)
+    draw_year_numbers(ctx, box_size, pos_x, Y_MARGIN, life_expectancy, birthdate)
     draw_grid(
-        ctx, box_size, pos_x, Y_MARGIN, life_expectancy, shade_until_date, birthdate
+        ctx, box_size, pos_x, Y_MARGIN, life_expectancy, birthdate, shade_until_date
     )
 
     draw_sidebar(ctx, sidebar, pos_x)
