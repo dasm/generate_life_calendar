@@ -2,7 +2,6 @@
 import argparse
 import datetime
 import math
-import os
 
 import cairo
 
@@ -10,7 +9,7 @@ import cairo
 DOC_WIDTH = 1683  # 594mm / 23 3/8 inches
 DOC_HEIGHT = 2383  # 841mm / 33 1/8 inches
 
-DOC_NAME = "life_calendar.pdf"
+OUTPUT_FILE = "life_calendar.pdf"
 
 KEY_NEWYEAR_DESC = "New Year"
 KEY_BIRTHDAY_DESC = "Birthday"
@@ -200,13 +199,12 @@ def gen_calendar(
     birthdate,
     title,
     life_expectancy,
-    filename,
     shade_until_date,
     sidebar,
     subtitle,
 ):
     # Fill background with white
-    surface = cairo.PDFSurface(filename, DOC_WIDTH, DOC_HEIGHT)
+    surface = cairo.PDFSurface(OUTPUT_FILE, DOC_WIDTH, DOC_HEIGHT)
     ctx = cairo.Context(surface)
     ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 
@@ -244,14 +242,6 @@ def generate_parser():
         "date",
         type=datetime.date.fromisoformat,
         help="starting date; your birthday, in ISO format",
-    )
-    parser.add_argument(
-        "-f",
-        "--filename",
-        type=str,
-        dest="filename",
-        help="output filename",
-        default=DOC_NAME,
     )
 
     def title_len(title):
@@ -312,18 +302,15 @@ def generate_parser():
 def main():
     parser = generate_parser()
     args = parser.parse_args()
-    doc_name = "%s.pdf" % (os.path.splitext(args.filename)[0])
 
     gen_calendar(
         args.date,
         args.title,
         args.age,
-        doc_name,
         args.shade_until_date,
-        sidebar=args.sidebar,
+        args.sidebar,
         subtitle=(args.subtitle or str(args.date)),
     )
-    print("Created %s" % doc_name)
 
 
 if __name__ == "__main__":
