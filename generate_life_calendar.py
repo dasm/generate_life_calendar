@@ -11,7 +11,6 @@ DOC_HEIGHT = 2383  # 841mm / 33 1/8 inches
 
 OUTPUT_FILE = "life_calendar.pdf"
 
-KEY_NEWYEAR_DESC = "New Year"
 KEY_BIRTHDAY_DESC = "Birthday"
 
 FONT = "Brocha"
@@ -32,7 +31,6 @@ BOX_LINE_WIDTH = 3
 NUM_OF_WEEKS = 52
 
 BIRTHDAY_COLOR = (0.5, 0.5, 0.5)
-NEWYEAR_COLOR = (0.8, 0.8, 0.8)
 DARKENED_COLOR_DELTA = (-0.4, -0.4, -0.4)
 
 
@@ -41,10 +39,8 @@ def get_text_size(ctx, text):
     return width, height
 
 
-def get_number_of_weeks(year):
-    next_year = datetime.datetime(year + 1, 1, 1)
-    current_year = next_year - datetime.timedelta(days=4)
-    return current_year.isocalendar()[1]
+def get_weeks(year):
+    return datetime.date(year, 12, 28).isocalendar().week
 
 
 def get_monday(date):
@@ -116,7 +112,6 @@ def draw_legend(ctx, box_size, pos_x, pos_y):
     x_margin = pos_x
 
     for desc, color in (
-        (KEY_NEWYEAR_DESC, NEWYEAR_COLOR),
         (KEY_BIRTHDAY_DESC, BIRTHDAY_COLOR),
     ):
         draw_box(ctx, x_margin, pos_y, box_size, fillcolor=color)
@@ -157,25 +152,25 @@ def draw_year_numbers(ctx, box_size, pos_x, pos_y, life_expectancy):
         pos_y += box_size + BOX_MARGIN
 
 
-def draw_row(ctx, box_size, pos_x, pos_y, birthdate, date, shade_until_date):
+def draw_row(ctx, box_size, pos_x, pos_y, birthdate, shade_until_date, first_row=False):
     """
     Draws a row of 52 squares, starting at pos_y
     """
-    for idx in range(1, NUM_OF_WEEKS + 1):
+    date = datetime.date(birthdate.year, 1, 1)
+    for week in range(1, get_weeks(birthdate.year) + 1):
         fill = (1, 1, 1)
-        _year, current_week, _weekday = date.isocalendar()
         _year, birthday_week, _weekday = birthdate.isocalendar()
 
-        if current_week == birthday_week:
+        if week == birthday_week:
             fill = BIRTHDAY_COLOR
-        elif current_week == 1:
-            fill = NEWYEAR_COLOR
 
         if date < shade_until_date:
             fill = shaded_fill(fill)
 
-        draw_box(ctx, pos_x, pos_y, box_size, fillcolor=fill)
-        if idx % 4 == 0:
+        if (first_row and (week >= birthdate.isocalendar().week)) or (not first_row):
+            draw_box(ctx, pos_x, pos_y, box_size, fillcolor=fill)
+
+        if week % 4 == 0:
             pos_x += BOX_MARGIN
         pos_x += box_size + BOX_MARGIN
         date += datetime.timedelta(weeks=1)
@@ -188,11 +183,13 @@ def draw_grid(
     Draws the whole grid of 52x(life_expectancy) squares
     """
     # Draw the key for box colors
-    monday = get_monday(birthdate)
-    for _ in range(life_expectancy):
-        draw_row(ctx, box_size, pos_x, pos_y, birthdate, monday, shade_until_date)
+    birthdate_year = birthdate.year
+    for idx, year in enumerate(
+        range(birthdate_year + 1, birthdate_year + 1 + life_expectancy)
+    ):
+        birthdate = datetime.date(year, birthdate.month, birthdate.day)
+        draw_row(ctx, box_size, pos_x, pos_y, birthdate, shade_until_date, idx == 0)
         pos_y += box_size + BOX_MARGIN
-        monday += datetime.timedelta(weeks=52)
 
 
 def gen_calendar(
