@@ -53,7 +53,10 @@ def shaded_fill(fill):
 
 def draw_canvas(ctx):
     ctx.set_source_rgb(1, 1, 1)
-    ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
+    # ctx.rectangle(0, 0, DOC_WIDTH, DOC_HEIGHT)
+    ctx.rectangle(
+        Y_MARGIN, Y_MARGIN, DOC_WIDTH - (2 * Y_MARGIN), DOC_HEIGHT - (2 * Y_MARGIN)
+    )
     ctx.fill()
 
 
