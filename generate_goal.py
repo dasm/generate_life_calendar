@@ -4,6 +4,7 @@ import math
 
 import cairo
 
+OUTPUT_FILE = "goal.pdf"
 WIDTH = HEIGHT = 3
 PIXEL_SCALE = 1000
 
@@ -93,15 +94,12 @@ def draw_circle(ctx, year):
 
 
 def main(year):
-    surface = cairo.ImageSurface(
-        cairo.FORMAT_RGB24, WIDTH * PIXEL_SCALE, HEIGHT * PIXEL_SCALE
-    )
+    surface = cairo.PDFSurface(OUTPUT_FILE, WIDTH * PIXEL_SCALE, HEIGHT * PIXEL_SCALE)
     ctx = cairo.Context(surface)
     ctx.scale(PIXEL_SCALE, PIXEL_SCALE)
 
     draw_background(ctx)
     draw_circle(ctx, year)
-    surface.write_to_png("rectangle.png")
 
 
 if __name__ == "__main__":
