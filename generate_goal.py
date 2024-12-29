@@ -14,6 +14,9 @@ CIRCLE_Y = HEIGHT / 2
 LINE_LENGTH = 0.6
 LINE_WIDTH = 0.01
 
+MONTHS = dict(zip(range(1, 13), calendar.month_name[1:]))
+START_ANGLE = 270
+
 
 def draw_background(ctx):
     ctx.rectangle(0, 0, WIDTH, HEIGHT)
@@ -79,18 +82,42 @@ def draw_line(ctx):
 
 def draw_circle(ctx, year):
     ctx.translate(HEIGHT / 2, WIDTH / 2)
-    for month in range(1, 13):
+    # NOTE: Rotate back by 90* to start from top
+    ctx.rotate(START_ANGLE * math.pi / 180)
+
+    for idx, month in MONTHS.items():
+        radians = 2 * math.pi * (idx - 1) / 12
+
         ctx.save()
 
-        # NOTE: Rotate by 1/12th (a month)
-        ctx.rotate(2 * math.pi * month / 12)
+        # NOTE: Rotate by x/12th (no of months)
+        ctx.rotate(radians)
 
         # NOTE: Move (0, 0) to pos (0.75, 0) considering new angle
         ctx.translate(0.75, 0)
 
         draw_line(ctx)
-        draw_boxes(ctx, year, month)
+        draw_boxes(ctx, year, idx)
+
+        draw_month_names(ctx, month, radians)
         ctx.restore()
+
+
+def draw_month_names(ctx, month, radians):
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_font_size(0.05)
+    ctx.select_font_face("Brocha", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+
+    _, _, width, height, _, _ = ctx.text_extents(month)
+
+    # NOTE: Move to expected location
+    ctx.translate(0.55, 0.15)
+    # NOTE: Rotate back to 'normal' angle
+    ctx.rotate((math.pi / 2) - radians)
+    # NOTE: Translate based on center of a word
+    ctx.translate(-width / 2, height / 2)
+    ctx.move_to(0, 0)
+    ctx.show_text(month)
 
 
 def main(year):
