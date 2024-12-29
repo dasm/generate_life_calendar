@@ -18,23 +18,27 @@ LINE_WIDTH = 0.01
 MONTHS = dict(zip(range(1, 13), calendar.month_name[1:]))
 START_ANGLE = 270
 
+BLACK_COLOR = (0, 0, 0)
+WHITE_COLOR = (1, 1, 1)
+
 
 def draw_background(ctx):
     ctx.rectangle(0, 0, WIDTH, HEIGHT)
-    ctx.set_source_rgb(1, 1, 1)  # white color
+    ctx.set_source_rgb(*WHITE_COLOR)  # white color
     ctx.fill()
 
 
-def draw_boxes(ctx, year, month):
-    weeks = calendar.monthcalendar(year, month)
-    # angle = 2 * math.pi / 12 / len(weeks)
+def draw_boxes(ctx, date, month):
+    cal = calendar.Calendar()
+    weeks = cal.monthdatescalendar(date.year, month)
+    weeks = [[day if day.month == month else 0 for day in week] for week in weeks]
 
     ctx.save()
     # NOTE: Separate from the hard line
     ctx.translate(0, 0.02)
 
     for week in weeks:
-        draw_days(ctx, week)
+        draw_days(ctx, date, week)
         # NOTE: Divide a circle by 12 months * 6 weeks
         ctx.rotate(2 * math.pi / (12 * 6))
         # NOTE: Separate line of boxes, correct x axis
@@ -43,24 +47,28 @@ def draw_boxes(ctx, year, month):
     ctx.restore()
 
 
-def draw_days(ctx, days):
+def draw_days(ctx, date, days):
     ctx.save()
     # NOTE: Rescale box
     ctx.scale(0.05, 0.05)
+
     for day in days:
-        color = (0, 0, 0)
+        border = BLACK_COLOR
+        background = WHITE_COLOR
         if day == 0:
             # NOTE: Draw "white/empty" box
-            color = (1, 1, 1)
-        draw_roundrect(ctx, color)
+            border = WHITE_COLOR
+        elif day < date:
+            background = BLACK_COLOR
+        draw_roundrect(ctx, border, background)
         ctx.translate(1.2, 0)
 
     ctx.restore()
 
 
-def draw_roundrect(ctx, color=(0, 0, 0)):
+def draw_roundrect(ctx, border=BLACK_COLOR, background=WHITE_COLOR):
     ctx.set_line_width(LINE_WIDTH * 5)
-    ctx.set_source_rgb(*color)
+    ctx.set_source_rgb(*border)
 
     x = y = 0
     width = height = 1
@@ -70,7 +78,10 @@ def draw_roundrect(ctx, color=(0, 0, 0)):
     ctx.arc(x + width - r, y + height - r, r, 0, math.pi / 2)
     ctx.arc(x + r, y + height - r, r, math.pi / 2, math.pi)
     ctx.close_path()
-    ctx.stroke()
+    ctx.stroke_preserve()
+
+    ctx.set_source_rgb(*background)
+    ctx.fill()
 
 
 def draw_line(ctx):
@@ -81,7 +92,7 @@ def draw_line(ctx):
     ctx.stroke()
 
 
-def draw_circle(ctx, year):
+def draw_circle(ctx, date):
     ctx.translate(HEIGHT / 2, WIDTH / 2)
     # NOTE: Rotate back by 90* to start from top
     ctx.rotate(START_ANGLE * math.pi / 180)
@@ -96,9 +107,8 @@ def draw_circle(ctx, year):
 
         # NOTE: Move (0, 0) to pos (0.75, 0) considering new angle
         ctx.translate(0.75, 0)
-
         draw_line(ctx)
-        draw_boxes(ctx, year, idx)
+        draw_boxes(ctx, date, idx)
 
         draw_month_names(ctx, month, radians)
         ctx.restore()
@@ -121,22 +131,22 @@ def draw_month_names(ctx, month, radians):
     ctx.show_text(month)
 
 
-def main(year):
+def main(date):
     surface = cairo.PDFSurface(OUTPUT_FILE, WIDTH * PIXEL_SCALE, HEIGHT * PIXEL_SCALE)
     ctx = cairo.Context(surface)
     ctx.scale(PIXEL_SCALE, PIXEL_SCALE)
 
     draw_background(ctx)
-    draw_circle(ctx, year)
+    draw_circle(ctx, date)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-d", "--date", type=datetime.date, default=datetime.date.today()
+        "-d", "--date", type=datetime.date.fromisoformat, default=datetime.date.today()
     )
     parser.add_argument("-s", "--sunday", action="store_true", default=False)
     args = parser.parse_args()
     if args.sunday:
         calendar.setfirstweekday(calendar.SUNDAY)
-    main(args.date.year)
+    main(args.date)
