@@ -1,5 +1,6 @@
 import argparse
 import calendar
+import datetime
 import math
 
 import cairo
@@ -131,6 +132,11 @@ def main(year):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("year", type=int)
+    parser.add_argument(
+        "-d", "--date", type=datetime.date, default=datetime.date.today()
+    )
+    parser.add_argument("-s", "--sunday", action="store_true", default=False)
     args = parser.parse_args()
-    main(args.year)
+    if args.sunday:
+        calendar.setfirstweekday(calendar.SUNDAY)
+    main(args.date.year)
