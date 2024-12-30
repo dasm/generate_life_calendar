@@ -7,7 +7,7 @@ import cairo
 
 OUTPUT_FILE = "goal.pdf"
 WIDTH = HEIGHT = 3
-PIXEL_SCALE = 1000
+PIXEL_SCALE = 200
 
 CIRCLE_X = WIDTH / 2
 CIRCLE_Y = HEIGHT / 2
