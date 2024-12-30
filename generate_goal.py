@@ -93,6 +93,8 @@ def draw_line(ctx):
 
 
 def draw_circle(ctx, date):
+    ctx.save()
+
     ctx.translate(HEIGHT / 2, WIDTH / 2)
     # NOTE: Rotate back by 90* to start from top
     ctx.rotate(START_ANGLE * math.pi / 180)
@@ -110,38 +112,56 @@ def draw_circle(ctx, date):
         draw_line(ctx)
         draw_boxes(ctx, date, idx)
 
+        radians = (math.pi / 2) - radians
         draw_month_names(ctx, month, radians)
         ctx.restore()
 
+    ctx.restore()
 
-def draw_month_names(ctx, month, radians):
+
+def draw_month_names(ctx, text, radians):
+    draw_text(ctx, text, (0.55, 0.15), font_size=0.05, radians=radians)
+
+
+def draw_text(ctx, text, position, font_size, radians=0):
     ctx.set_source_rgb(0, 0, 0)
-    ctx.set_font_size(0.05)
     ctx.select_font_face("Brocha", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    ctx.set_font_size(font_size)
 
-    _, _, width, height, _, _ = ctx.text_extents(month)
+    _, _, width, height, _, _ = ctx.text_extents(text)
 
-    # NOTE: Move to expected location
-    ctx.translate(0.55, 0.15)
-    # NOTE: Rotate back to 'normal' angle
-    ctx.rotate((math.pi / 2) - radians)
-    # NOTE: Translate based on center of a word
+    ctx.save()
+    ctx.translate(*position)
+    ctx.rotate(radians)
     ctx.translate(-width / 2, height / 2)
     ctx.move_to(0, 0)
-    ctx.show_text(month)
+    ctx.show_text(text)
+    ctx.restore()
 
 
-def main(date):
+def draw_title(ctx, date):
+    draw_text(ctx, str(date.year), (CIRCLE_X, CIRCLE_Y + 0.1), font_size=0.1)
+
+
+def draw_goal(ctx, goal):
+    draw_text(ctx, goal, (CIRCLE_X, CIRCLE_Y - 0.1), font_size=0.15)
+    draw_text(ctx, 15 * "_", (CIRCLE_X, CIRCLE_Y), font_size=0.15)
+
+
+def main(date, goal):
     surface = cairo.PDFSurface(OUTPUT_FILE, WIDTH * PIXEL_SCALE, HEIGHT * PIXEL_SCALE)
     ctx = cairo.Context(surface)
     ctx.scale(PIXEL_SCALE, PIXEL_SCALE)
 
     draw_background(ctx)
     draw_circle(ctx, date)
+    draw_title(ctx, date)
+    draw_goal(ctx, goal)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("goal", type=str)
     parser.add_argument(
         "-d", "--date", type=datetime.date.fromisoformat, default=datetime.date.today()
     )
@@ -149,4 +169,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.sunday:
         calendar.setfirstweekday(calendar.SUNDAY)
-    main(args.date)
+    main(args.date, args.goal)
